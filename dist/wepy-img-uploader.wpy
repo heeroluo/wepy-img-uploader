@@ -1,0 +1,258 @@
+<template lang="wxml">
+	<view class="wepy-img-uploader">
+		<block wx:for="{{ imgList }}" wx:key="index">
+			<view class="wepy-img-uploader__item wepy-img-uploader__item-img">
+				<image src="{{ item.tempPath }}" mode="aspectFill" @tap="previewImg({{ index }})" />
+				<view class="wepy-img-uploader__item-img__progress" style="width: {{ (item.url ? 0 : (100 - item.progress)) }}%;"></view>
+				<view class="wepy-img-uploader__item-img__cancel" @tap="deleteImg({{ index }})">
+					<view class="wepy-img-uploader__item-img__cancel__inner"></view>
+				</view>
+			</view>
+		</block>
+		<view class="wepy-img-uploader__item wepy-img-uploader__item-placeholder" @tap="chooseImgs" wx:if="{{ imgList.length < count }}"></view>
+	</view>
+</template>
+
+
+<style>
+.wepy-img-uploader {
+	margin-left: -20rpx;
+}
+
+.wepy-img-uploader__item {
+	display: inline-block;
+	width: 150rpx;
+	height: 150rpx;
+	margin: 30rpx 0 0 20rpx;
+	background: #fff;
+	box-sizing: border-box;
+	border: 2rpx solid #E2E3E5;
+	border-radius: 8rpx;
+	overflow: hidden;
+	vertical-align: top;
+}
+
+.wepy-img-uploader__item-img {
+	position: relative;
+}
+.wepy-img-uploader__item-img image {
+	width: 100%;
+	height: 100%;
+}
+
+.wepy-img-uploader__item-img__progress {
+	position: absolute;
+	right: 0;
+	top: 0;
+	width: 100%;
+	height: 100%;
+	background: rgba(0, 0, 0, 0.6);
+	transition-duration: 0.2s;
+	transition-property: width;
+}
+
+.wepy-img-uploader__item-img__cancel {
+	position: absolute;
+	right: 0;
+	top: 0;
+	width: 40rpx;
+	height: 40rpx;
+}
+
+.wepy-img-uploader__item-img__cancel__inner {
+	position: absolute;
+	right: 8rpx;
+	top: 8rpx;
+	width: 24rpx;
+	height: 24rpx;
+	background-color: rgba(0, 0, 0, 0.3);
+	background-image: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABQAAAAUBAMAAAB/pwA+AAAAFVBMVEUAAAD///////////////////////9Iz20EAAAABnRSTlMA9kLn3FByhC8YAAAAUklEQVQI12NAAqwmCiCKyTmAgTlNCMRUTDNgYElLVAAKiqU5gAghoCBQAEJC+GBhiCBYGCwIEQYLQoShgggmQgFCG6phCCsQFiM7B+FIZKcjAACj2RjX5JATJgAAAABJRU5ErkJggg==);
+	background-position: center center;
+	background-repeat: no-repeat;
+	background-size: 14rpx 14rpx;
+	border-radius: 50%;
+}
+
+.wepy-img-uploader__item-placeholder {
+	background: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACgAAAAoAgMAAADxkFD+AAAADFBMVEUAAACYmJiampqXl5c5Z/+0AAAAA3RSTlMA40mAJZ3FAAAAL0lEQVQY02MAAc4EBhhgvwBn8n8YOsz5/6HgG0M9jPkXmYlQMCjcSxITES2IyAIAIuVIY+OcQ9gAAAAASUVORK5CYII=);
+	background-position: center center;
+	background-repeat: no-repeat;
+	background-size: 40rpx 40rpx;
+}
+</style>
+
+
+<script>
+import wepy from 'wepy';
+import * as upload from './upload';
+
+export default class WepyImgUploader extends wepy.component {
+	props = {
+		// 最大可上传图片数
+		count: {
+			type: Number,
+			'default': 1
+		},
+		// 已上传图片列表
+		imgs: {
+			type: Array,
+			'default': []
+		},
+		// 上传前执行的函数，必须返回Promise
+		beforeUpload: {
+			type: Function
+		},
+		// 上传方法，必须返回UploadTask
+		upload: {
+			type: Function
+		}
+	};
+
+	data = {
+		imgList: []
+	};
+
+	// 更新图片状态
+	updateImgState(taskId, state) {
+		const imgList = this.imgList;
+
+		for (let i = 0, hasChange; i < imgList.length; i++) {
+			if (imgList[i].taskId === taskId) {
+				if (typeof state === 'object') {
+					Object.assign(imgList[i], state);
+					// state包含URL时即为上传完成
+					if (state.url) { hasChange = true; }
+				} else if (state === false) {
+					// state为false时表示移除该图片
+					imgList.splice(i, 1);
+					hasChange = true;
+				}
+
+				this.$apply();
+				if (hasChange) {
+					this.triggerChange();
+				}
+				break;
+			}
+		}
+	}
+
+	// 图片数组发生变化时触发change事件
+	triggerChange() {
+		this.$emit('change', {
+			imgs: this.imgList.map((img) => {
+				// 如果已上传完成，则返回URL，否则返回false
+				return img.url || false;
+			})
+		});
+	}
+
+	methods = {
+		// 点击“+”选择图片
+		chooseImgs() {
+			wepy.chooseImage({
+				count: this.count - this.imgList.length
+			}).then((res) => {
+				const tempFilePaths = res.tempFilePaths;
+				if (tempFilePaths && tempFilePaths.length) {
+					// 上传
+					const taskIds = upload.addFiles(tempFilePaths, this.upload, {
+						beforeUpload: this.beforeUpload,
+						onProgress: (e) => {
+							this.updateImgState(e.taskId, {
+								progress: e.progress
+							});
+						},
+						onSuccess: (e) => {
+							this.updateImgState(e.taskId, {
+								url: e.url
+							});
+						},
+						onFail: (e) => {
+							wepy.showToast({
+								title: e.message,
+								icon: 'none'
+							});
+							this.updateImgState(e.taskId, false);
+						}
+					});
+
+					// 记录图片数据
+					tempFilePaths.forEach((tempPath, i) => {
+						this.imgList.push({
+							taskId: taskIds[i],
+							previewPath: tempPath,
+							tempPath,
+							progress: 0
+						});
+					});
+
+					this.$apply();
+					this.triggerChange();
+				}
+			});
+		},
+
+		// 点击“X”时移除图片
+		deleteImg(index) {
+			const taskId = this.imgList[index].taskId;
+
+			if (taskId) {
+				// 取消上传
+				upload.abort(taskId);
+				// 在本组件数据中移除图片
+				this.updateImgState(taskId, false);
+			} else {
+				this.imgList.splice(index, 1);
+				this.triggerChange();
+				this.$apply();
+			}
+		},
+
+		// 预览图片
+		previewImg(index) {
+			const imgPaths = this.imgList.map((img) => {
+				return img.previewPath || img.url;
+			});
+			wepy.previewImage({
+				urls: imgPaths,
+				current: imgPaths[index]
+			});
+		}
+	};
+
+	// imgs属性变化时，同步更新imgList数据
+	syncImgs() {
+		if (this.imgs) {
+			this.imgList = this.imgs.map((item) => {
+				let img, thumb;
+				if (typeof item === 'object') {
+					img = item.img;
+					thumb = item.thumb;
+				} else {
+					img = thumb = item;
+				}
+				return {
+					tempPath: thumb,
+					url: img,
+					progress: 100
+				};
+			});
+		} else {
+			this.imgList = [];
+		}
+		this.triggerChange();
+		this.$apply();
+	}
+
+	watch = {
+		imgs() {
+			this.syncImgs();
+		}
+	};
+
+	onLoad() {
+		this.syncImgs();
+	}
+}
+</script>
