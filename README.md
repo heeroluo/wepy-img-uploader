@@ -11,6 +11,7 @@
 - 上传过程中，图片上方有黑色的半透明覆盖层，其宽度随着上传进度而变化，起到进度条的作用；
 - 上传过程中，不阻塞界面上的其他操作；
 - 点击已上传或上传中图片右上角的叉，可以移除图片（仅在页面数据中移除，非移除图片本身）；
+- 点击小图可以查看大图。
 
 （注意：本组件目前仅支持基于「WePY」开发的微信小程序项目）
 
@@ -47,7 +48,7 @@ npm install wepy-img-uploader --save
 ### upload
 - 说明：执行上传的函数，必须返回 UploadTask 。
 - 必填：无。
-- 类型：函数，其参数依次为：
+- 类型：函数，其参数依次为（参数较为复杂，请结合下文的示例查看）：
   - 图片路径（本地临时路径）；
   - beforeUpload返回的数据；
   - 用于解决上传Promise的resolve函数，上传成功后传入图片路径调用；
@@ -121,9 +122,7 @@ export default class Test extends wepy.page {
 						// 上传成功后返回URL
 						resolve(res.data.url);
 					} else {
-						const e = new Error(res.errMsg);
-						e.code = res.statusCode;
-						reject(e);
+						reject(new Error(res.errMsg));
 					}
 				},
 				fail(e) {
