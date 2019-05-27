@@ -18,9 +18,15 @@ gulp.task('copy-others', () => {
 		.pipe(gulp.dest('dist'));
 });
 
-gulp.task('watch', ['build-js', 'copy-others'], () => {
-	gulp.watch(jsFiles, ['build-js']);
-	gulp.watch(otherFiles, ['copy-others']);
-});
+gulp.task(
+	'watch',
+	gulp.parallel('build-js', 'copy-others', () => {
+		gulp.watch(jsFiles, ['build-js']);
+		gulp.watch(otherFiles, ['copy-others']);
+	})
+);
 
-gulp.task('default', ['build-js', 'copy-others']);
+gulp.task(
+	'default',
+	gulp.parallel('build-js', 'copy-others')
+);
