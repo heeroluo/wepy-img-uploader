@@ -1,6 +1,6 @@
 {
   "name": "wepy-img-uploader",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Image upload component for WePY applications",
   "scripts": {
     "start": "gulp watch",
@@ -12,14 +12,14 @@
     "url": "https://github.com/beiliao-web-frontend/wepy-img-uploader"
   },
   "keywords": [
-    "html",
-    "parse",
-    "rich text"
+    "wepy",
+    "image",
+    "upload"
   ],
   "author": {
-    "name": "Heero.Luo",
+    "name": "Mr.Luo",
     "email": "heeroluo@126.com",
-    "url": "http://heeroluo.net/"
+    "url": "http://mrluo.life/"
   },
   "license": "MIT",
   "bugs": {
