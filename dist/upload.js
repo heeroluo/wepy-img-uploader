@@ -104,7 +104,7 @@ var uploadQueue = function () {
             });
           }
         });
-      }).catch(function (e) {
+      })["catch"](function (e) {
         _this._complete(function (task) {
           if (task.onFail) {
             task.onFail({
