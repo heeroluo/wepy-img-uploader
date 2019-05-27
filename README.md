@@ -5,7 +5,7 @@
 
 「WePY Image Uploader」是基于「WePY」小程序框架所开发的**图片上传**组件，其UI和交互如下图所示：
 
-![UI截图](https://raw.githubusercontent.com/beiliao-web-frontend/wepy-img-uploader/master/screenshots/screenshot.jpg)
+![UI截图](https://raw.githubusercontent.com/heeroluo/wepy-img-uploader/master/screenshots/screenshot.jpg)
 
 - 点击加号可选择图片进行上传；
 - 上传过程中，图片上方有黑色的半透明覆盖层，其宽度随着上传进度而变化，起到进度条的作用；
