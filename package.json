@@ -1,6 +1,6 @@
 {
   "name": "wepy-img-uploader",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "description": "Image upload component for WePY applications",
   "scripts": {
     "start": "gulp watch",
@@ -23,9 +23,9 @@
   },
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/beiliao-web-frontend/wepy-img-uploader/issues"
+    "url": "https://github.com/heeroluo/wepy-img-uploader/issues"
   },
-  "homepage": "https://github.com/beiliao-web-frontend/wepy-img-uploader#readme",
+  "homepage": "https://github.com/heeroluo/wepy-img-uploader#readme",
   "devDependencies": {
     "@babel/core": "^7.4.3",
     "@babel/preset-env": "^7.4.3",
